@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  miapi:
+    build:
+      context: .                # carpeta donde está el DockerFile
+      dockerfile: Dockerfile    # nombre de tu Dockerfile
+    ports:
+      - "5087:80"               # mapear puerto HTTP
+      - "7165:443"              # mapear puerto HTTPS
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
