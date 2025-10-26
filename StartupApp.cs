@@ -45,6 +45,13 @@ namespace WebApi_csharp
                 });
             });
 
+            builder.Services.AddHttpClient("inventory", c =>
+            {
+                // Base URL del propio servicio (como si fuera externo)
+                c.BaseAddress = new Uri("http://localhost:8080/");
+            });
+
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
