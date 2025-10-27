@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Json;
 using WebApi_csharp.Models;
+using WebApi_csharp.Services;
 
 namespace WebApi_csharp.Controllers
 {
@@ -24,8 +25,16 @@ namespace WebApi_csharp.Controllers
             if (res == null || !res.available)
                 return Conflict(new { message = "Producto sin stock" });
 
-            return Ok(new { orderId = Guid.NewGuid(), status = "CONFIRMED" });
+            // Si hay stock, confirmamos el pedido
+            var orderId = Guid.NewGuid();
+
+            // Publicar mensaje en RabbitMQ
+            new RabbitService().PublishOrderCreated(orderId.ToString());
+
+            // Respuesta final
+            return Ok(new { orderId, status = "CONFIRMED" });
         }
+
 
         public record OrderDto(Guid ProductId, int Quantity);
         public record AvailabilityResponse(Guid productId, int stock, bool available);
