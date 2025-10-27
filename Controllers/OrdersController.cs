@@ -25,14 +25,20 @@ namespace WebApi_csharp.Controllers
             if (res == null || !res.available)
                 return Conflict(new { message = "Producto sin stock" });
 
-            // Si hay stock, confirmamos el pedido
             var orderId = Guid.NewGuid();
 
-            // Publicar mensaje en RabbitMQ
-            new RabbitService().PublishOrderCreated(orderId.ToString());
+            // Publicar evento de pedido creado
+            await new KafkaService().PublishStatusAsync(orderId.ToString(), "CREADO");
 
-            // Respuesta final
-            return Ok(new { orderId, status = "CONFIRMED" });
+            // Confirmar pedido
+            new RabbitService().PublishOrderCreated(orderId.ToString());
+            await new KafkaService().PublishStatusAsync(orderId.ToString(), "CONFIRMADO");
+
+            // Simular envío
+            await Task.Delay(2000);
+            await new KafkaService().PublishStatusAsync(orderId.ToString(), "ENVIADO");
+
+            return Ok(new { orderId, status = "ENVIADO" });
         }
 
 

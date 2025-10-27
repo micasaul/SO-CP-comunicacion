@@ -5,10 +5,22 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // Si se ejecuta con "notification", arranca el consumidor
-        if (args.Length > 0 && args[0].ToLower() == "notification")
+        if (args.Length > 0)
         {
-            new NotificationService().Start();
+            var mode = args[0].ToLower();
+
+            if (mode == "notification")
+            {
+                new NotificationService().Start();
+            }
+            else if (mode == "analytics")
+            {
+                new AnalyticsService().Start();
+            }
+            else
+            {
+                StartupApp.Run(args);
+            }
         }
         else
         {

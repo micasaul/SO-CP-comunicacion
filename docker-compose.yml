@@ -21,6 +21,7 @@ services:
     entrypoint: ["dotnet", "/app/WebApi_csarp.dll", "notification"]
     depends_on:
       - rabbitmq
+      - kafka
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -29,3 +30,43 @@ services:
       - "5672:5672"
       - "15672:15672"
     restart: unless-stopped
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper_data:/data
+    restart: unless-stopped
+
+  kafka:
+    image: wurstmeister/kafka
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    volumes:
+      - kafka_data:/kafka
+    restart: unless-stopped
+
+  analytics:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: analytics
+    entrypoint: ["dotnet", "/app/WebApi_csarp.dll", "analytics"]
+    depends_on:
+      - kafka
+
+volumes:
+  kafka_data:
+  zookeeper_data:
